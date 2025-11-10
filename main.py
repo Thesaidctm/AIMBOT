@@ -278,14 +278,28 @@ def main():
                             for i in indices[:scan_count]:
                                 entity_addr = memory.read_int(memory.client_module + Offsets.dwEntityList + i * 4)
                                 print(f"Player slot {i}: Address {entity_addr}")
-                                
-                                if entity_addr and entity_addr != local_player_addr:
-                                    print(f"Found player at slot {i}, address {entity_addr}")
-                                    players.append(Player(memory, entity_addr))
-                                    
-                                    # Add small random delay between player scans
-                                    if random.random() < 0.1:  # 10% chance
-                                        time.sleep(random.uniform(0.0001, 0.0005))
+
+                                if not entity_addr or entity_addr == local_player_addr:
+                                    continue
+
+                                print(f"Found player at slot {i}, address {entity_addr}")
+
+                                player = Player(memory, entity_addr)
+                                player.update()
+
+                                if not player.is_valid():
+                                    print("Skipping invalid player entry")
+                                    continue
+
+                                if not player.is_enemy(local_player.team):
+                                    print("Skipping teammate or neutral entity")
+                                    continue
+
+                                players.append(player)
+
+                                # Add small random delay between player scans
+                                if random.random() < 0.1:  # 10% chance
+                                    time.sleep(random.uniform(0.0001, 0.0005))
                             
                             print(f"Found {len(players)} potential players")
                             
