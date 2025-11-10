@@ -128,7 +128,9 @@ class OffsetManager:
                     print("Found LocalPlayer offset:", hex(self.offsets["dwLocalPlayer"]))
             else:
                 print("LocalPlayer pattern not found, using fallback")
-                local_player_addr = self.memory.client_module + self.fallback_offsets["dwLocalPlayer"]
+                fallback_ptr = self.memory.read_int(self.memory.client_module + self.fallback_offsets["dwLocalPlayer"])
+                if fallback_ptr:
+                    local_player_addr = fallback_ptr
 
             # 2) EntityList
             entity_list_pattern = b"\x05\x00\x00\x00\x00\xC1\xE1\x04\x05\x00\x00\x00\x00"
