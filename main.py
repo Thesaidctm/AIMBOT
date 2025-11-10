@@ -244,9 +244,10 @@ def main():
                     # Only scan for players at randomized intervals
                     if current_time >= next_player_scan:
                         # Get local player
-                        local_player_addr = memory.client_module + Offsets.dwLocalPlayer
+                        local_player_ptr = memory.client_module + Offsets.dwLocalPlayer
+                        local_player_addr = memory.read_int(local_player_ptr)
                         print(f"Local player address: {local_player_addr}")
-                        
+
                         if local_player_addr:
                             local_player = Player(memory, local_player_addr)
                             print(f"Local player: Health={local_player.health}, Team={local_player.team}")
@@ -275,8 +276,14 @@ def main():
                             scan_count = int(len(indices) * random.uniform(0.7, 1.0))
                             print(f"Scanning {scan_count} player slots")
                             
+                            entity_list_base = memory.read_int(memory.client_module + Offsets.dwEntityList)
+
+                            if not entity_list_base:
+                                print("Entity list base pointer is invalid")
+                                break
+
                             for i in indices[:scan_count]:
-                                entity_addr = memory.read_int(memory.client_module + Offsets.dwEntityList + i * 4)
+                                entity_addr = memory.read_int(entity_list_base + i * 4)
                                 print(f"Player slot {i}: Address {entity_addr}")
 
                                 if not entity_addr or entity_addr == local_player_addr:
