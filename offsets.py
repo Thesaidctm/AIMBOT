@@ -204,10 +204,10 @@ class Offsets:
         cls.update_offsets()
 
     @classmethod
-    def update_offsets(cls):
+    def update_offsets(cls, force=False):
         try:
             if hasattr(cls, "offset_manager"):
-                cls.offset_manager.update_offsets()
+                cls.offset_manager.update_offsets(force=force)
                 # aplica tudo sem perguntar
                 for key, value in cls.offset_manager.offsets.items():
                     setattr(cls, key, value)

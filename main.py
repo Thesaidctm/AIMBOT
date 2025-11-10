@@ -198,7 +198,9 @@ def main():
         # Variables for randomized execution
         next_player_scan = time.time()
         player_scan_interval = random.uniform(0.05, 0.15)  # 50-150ms
-        
+        last_local_player_retry = 0
+        local_player_retry_interval = 1.0
+
         while running:
             global STATUS_UPDATE_INTERVAL, PROCESS_CHECK_INTERVA
             # Add randomized execution pattern
@@ -247,6 +249,18 @@ def main():
                         local_player_ptr = memory.client_module + Offsets.dwLocalPlayer
                         local_player_addr = memory.read_int(local_player_ptr)
                         print(f"Local player address: {local_player_addr}")
+
+                        if not local_player_addr:
+                            if current_time - last_local_player_retry >= local_player_retry_interval:
+                                print("Local player not found. Retrying offset scan...")
+                                last_local_player_retry = current_time
+                                try:
+                                    Offsets.update_offsets(force=True)
+                                except Exception as e:
+                                    print(f"Failed to refresh offsets: {e}")
+
+                            next_player_scan = current_time + random.uniform(0.05, 0.15)
+                            continue
 
                         if local_player_addr:
                             local_player = Player(memory, local_player_addr)
